@@ -3,6 +3,9 @@
   "name": "pudding-music-source",
   "main": "cloudflare/worker.mjs",
   "compatibility_date": "2026-08-15",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "workers_dev": true,
   "vars": {
     "ENABLE_GENERAL_UNBLOCK": "false",
