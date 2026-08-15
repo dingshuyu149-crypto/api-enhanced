@@ -8,6 +8,7 @@ examples/moddef.json
 bin
 anonymous_token
 .vercel
+.wrangler
 .env
 IFLOW.md
 precompiled

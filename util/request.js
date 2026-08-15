@@ -25,14 +25,38 @@ const {
   getToken: antiCheatTokenV3,
 } = require('../module/register_checktoken_v3')
 
-// 预先读取匿名token并缓存
-const anonymous_token = fs.readFileSync(
-  path.resolve(tmpPath, './anonymous_token'),
-  'utf-8',
-)
+let runtimeAnonymousToken = ''
+let runtimeXeapiPublicKey = null
+
+const setRuntimeCredentials = ({ anonymousToken, xeapiPublicKey }) => {
+  if (typeof anonymousToken === 'string') {
+    runtimeAnonymousToken = anonymousToken
+  }
+
+  if (xeapiPublicKey) {
+    runtimeXeapiPublicKey = xeapiPublicKey
+  }
+}
+
+const loadAnonymousToken = () => {
+  if (runtimeAnonymousToken) {
+    return runtimeAnonymousToken
+  }
+
+  try {
+    return fs.readFileSync(path.resolve(tmpPath, './anonymous_token'), 'utf-8')
+  } catch (_) {
+    return ''
+  }
+}
+
 const xeapiPublicKeyPath = path.resolve(tmpPath, './xeapi_public_key')
 let xeapi_public_key = null
 const loadXeapiPublicKey = () => {
+  if (runtimeXeapiPublicKey) {
+    return runtimeXeapiPublicKey
+  }
+
   if (!xeapi_public_key && fs.existsSync(xeapiPublicKeyPath)) {
     try {
       xeapi_public_key = JSON.parse(
@@ -160,7 +184,7 @@ const processCookieObject = (cookie, uri) => {
   }
 
   if (!processedCookie.MUSIC_U) {
-    processedCookie.MUSIC_A = processedCookie.MUSIC_A || anonymous_token
+    processedCookie.MUSIC_A = processedCookie.MUSIC_A || loadAnonymousToken()
   }
 
   return processedCookie
@@ -485,5 +509,7 @@ const createRequest = async (uri, data, options) => {
       })
   })
 }
+
+createRequest.setRuntimeCredentials = setRuntimeCredentials
 
 module.exports = createRequest
