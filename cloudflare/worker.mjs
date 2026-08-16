@@ -32,7 +32,6 @@ const handleError = (error) => {
 
 export default {
   async fetch(request, env, ctx) {
-    void env
     void ctx
     const url = new URL(request.url)
 
@@ -54,7 +53,7 @@ export default {
 
     try {
       if (url.pathname === '/audio') {
-        return await audio(request, url, runtime)
+        return await audio(request, url, env)
       }
 
       if (url.pathname === '/cloudsearch') {
@@ -63,7 +62,7 @@ export default {
       }
 
       if (url.pathname === '/song/url/v1') {
-        const result = await songUrlV1(url, runtime)
+        const result = await songUrlV1(url, env)
         return jsonResponse(result.body, result.status, true)
       }
     } catch (error) {

@@ -36,7 +36,7 @@ const errorResponse = (body, status) =>
     },
   })
 
-module.exports = async (request, url, runtime) => {
+module.exports = async (request, url, env) => {
   const id = url.searchParams.get('id')
   if (!id || !/^\d+$/.test(id)) {
     return errorResponse({ code: 400, message: 'valid id is required' }, 400)
@@ -45,7 +45,7 @@ module.exports = async (request, url, runtime) => {
   const songUrl = new URL('/song/url/v1', url.origin)
   songUrl.searchParams.set('id', id)
   songUrl.searchParams.set('level', 'standard')
-  const result = await songUrlV1(songUrl, runtime)
+  const result = await songUrlV1(songUrl, env)
   const sourceUrl = result.body?.data?.[0]?.url
 
   if (result.status !== 200 || !sourceUrl) {
