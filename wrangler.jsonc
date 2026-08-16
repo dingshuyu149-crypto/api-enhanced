@@ -10,6 +10,7 @@
   "vars": {
     "ENABLE_GENERAL_UNBLOCK": "false",
     "ENABLE_PROXY": "false",
-    "ENABLE_RANDOM_CN_IP": "false"
+    "ENABLE_RANDOM_CN_IP": "true",
+    "DEBUG_MUSIC_REQUEST_CONTEXT": "true"
   }
 }

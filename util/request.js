@@ -211,6 +211,12 @@ const generateRequestId = () => {
     .padStart(4, '0')}`
 }
 
+const maskDeviceId = (deviceId) => {
+  if (!deviceId) return ''
+  const value = String(deviceId)
+  return `${value.slice(0, 6)}...${value.slice(-4)}`
+}
+
 const createRequest = async (uri, data, options) => {
   let token = ''
   switch (options.checkToken) {
@@ -440,6 +446,37 @@ const createRequest = async (uri, data, options) => {
     } else {
       settings.proxy = false
     }
+
+    if (crypto === 'eapi' && process.env.DEBUG_MUSIC_REQUEST_CONTEXT === 'true') {
+      const requestUrl = new URL(settings.url)
+      console.info('[music-request-context]', {
+        crypto,
+        request: `${requestUrl.hostname}${requestUrl.pathname}`,
+        optionsIp: options.ip || '',
+        hasXRealIp: Boolean(headers['X-Real-IP']),
+        hasXForwardedFor: Boolean(headers['X-Forwarded-For']),
+        cookie: {
+          os: cookie.os || '',
+          appver: cookie.appver || '',
+          versioncode: cookie.versioncode || '',
+          buildver: cookie.buildver || '',
+          deviceId: maskDeviceId(cookie.deviceId),
+          hasMusicA: Boolean(cookie.MUSIC_A),
+          hasMusicU: Boolean(cookie.MUSIC_U),
+        },
+        userAgent: headers['User-Agent'] || '',
+        dataHeader: {
+          os: data.header?.os || '',
+          appver: data.header?.appver || '',
+          versioncode: data.header?.versioncode || '',
+          buildver: data.header?.buildver || '',
+          deviceId: maskDeviceId(data.header?.deviceId),
+          hasMusicA: Boolean(data.header?.MUSIC_A),
+          hasMusicU: Boolean(data.header?.MUSIC_U),
+        },
+      })
+    }
+
     // console.log(settings.headers);
     axios(settings)
       .then((res) => {
