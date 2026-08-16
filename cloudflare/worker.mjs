@@ -1,5 +1,6 @@
 import cloudsearch from './routes/cloudsearch.js'
 import songUrlV1 from './routes/song-url-v1.js'
+import audio from './routes/audio.js'
 import runtime from './runtime.js'
 
 const corsHeaders = {
@@ -52,6 +53,10 @@ export default {
     }
 
     try {
+      if (url.pathname === '/audio') {
+        return await audio(request, url, runtime)
+      }
+
       if (url.pathname === '/cloudsearch') {
         const result = await cloudsearch(url, runtime)
         return jsonResponse(result.body, result.status, true)
