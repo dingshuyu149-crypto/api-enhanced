@@ -1,5 +1,5 @@
 const CryptoJS = require('crypto-js')
-const crypto = require('crypto')
+const crypto = require('node:crypto')
 const forge = require('node-forge')
 const zlib = require('zlib')
 const iv = '0102030405060708'
