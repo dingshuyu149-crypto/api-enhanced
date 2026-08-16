@@ -28,7 +28,7 @@ module.exports = async (url, runtime) => {
   const result = await runtime.request(
     '/api/song/enhance/player/url/v1',
     data,
-    createOption(query, 'xeapi'),
+    createOption(query),
   )
   return { status: result.status, body: result.body }
 }
