@@ -27,18 +27,13 @@ const initializeMusicRuntime = async () => {
   const keyResult = await registerXeapiPublicKey({ deviceId }, request)
   request.setRuntimeCredentials({ xeapiPublicKey: keyResult.body })
 
-  const anonymousResult = await registerAnonymous({}, request)
-  const anonymousToken = getMusicA(anonymousResult.cookie)
-  if (!anonymousToken) {
-    throw new Error('anonymous token registration failed')
-  }
+  await registerAnonymous({}, request)
 
   const finalKeyResult = await registerXeapiPublicKey(
     { deviceId: global.deviceId },
     request,
   )
   request.setRuntimeCredentials({
-    anonymousToken,
     xeapiPublicKey: finalKeyResult.body,
   })
 }
