@@ -444,7 +444,15 @@ const createRequest = async (uri, data, options) => {
     axios(settings)
       .then((res) => {
         const body = res.data
-        answer.cookie = (res.headers['set-cookie'] || []).map((x) =>
+        const setCookie =
+          typeof res.headers?.getSetCookie === 'function'
+            ? res.headers.getSetCookie()
+            : Array.isArray(res.headers?.['set-cookie'])
+              ? res.headers['set-cookie']
+              : res.headers?.['set-cookie']
+                ? [res.headers['set-cookie']]
+                : []
+        answer.cookie = setCookie.map((x) =>
           x.replace(/\s*Domain=[^(;|$)]+;*/, ''),
         )
 
