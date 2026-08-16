@@ -151,21 +151,27 @@ const decrypt = (cipher) => {
 }
 
 const aesEcbEncrypt = (key, plaintext) => {
-  const cipher = crypto.createCipheriv(
-    `aes-${key.length * 8}-ecb`,
-    key,
-    null,
-  )
-  return Buffer.concat([cipher.update(Buffer.from(plaintext)), cipher.final()])
+  const keyWordArray = CryptoJS.enc.Hex.parse(key.toString('hex'))
+  const plaintextWordArray = CryptoJS.enc.Hex.parse(plaintext.toString('hex'))
+  const encrypted = CryptoJS.AES.encrypt(plaintextWordArray, keyWordArray, {
+    mode: CryptoJS.mode.ECB,
+    padding: CryptoJS.pad.Pkcs7,
+  })
+  return Buffer.from(encrypted.ciphertext.toString(CryptoJS.enc.Hex), 'hex')
 }
 
 const aesEcbDecrypt = (key, ciphertext) => {
-  const decipher = crypto.createDecipheriv(
-    `aes-${key.length * 8}-ecb`,
-    key,
-    null,
+  const keyWordArray = CryptoJS.enc.Hex.parse(key.toString('hex'))
+  const ciphertextWordArray = CryptoJS.enc.Hex.parse(ciphertext.toString('hex'))
+  const decrypted = CryptoJS.AES.decrypt(
+    { ciphertext: ciphertextWordArray },
+    keyWordArray,
+    {
+      mode: CryptoJS.mode.ECB,
+      padding: CryptoJS.pad.Pkcs7,
+    },
   )
-  return Buffer.concat([decipher.update(ciphertext), decipher.final()])
+  return Buffer.from(decrypted.toString(CryptoJS.enc.Hex), 'hex')
 }
 
 const createX25519PublicKey = (raw) => {
