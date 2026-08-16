@@ -1,6 +1,7 @@
 const CryptoJS = require('crypto-js')
 const crypto = require('node:crypto')
 const forge = require('node-forge')
+const nacl = require('tweetnacl')
 const zlib = require('zlib')
 const iv = '0102030405060708'
 const presetKey = '0CoJUm6Qyw8W8jud'
@@ -16,8 +17,6 @@ const xeapiStaticKey = Buffer.from(
 )
 const xeapiSignKey =
   'mUHCwVNWJbunMqAHf5MImuirT6plvs6VSFW62MGHstFQxhBGdEoIhLItH3djc4+FB/OKty3+lL2rGeoFBpVe5g=='
-const x25519SpkiPrefix = Buffer.from('302a300506032b656e032100', 'hex')
-
 const aesEncrypt = (text, mode, key, iv, format = 'base64') => {
   let encrypted = CryptoJS.AES.encrypt(
     CryptoJS.enc.Utf8.parse(text),
@@ -174,17 +173,6 @@ const aesEcbDecrypt = (key, ciphertext) => {
   return Buffer.from(decrypted.toString(CryptoJS.enc.Hex), 'hex')
 }
 
-const createX25519PublicKey = (raw) => {
-  // Node's crypto API expects X25519 public keys as DER SubjectPublicKeyInfo.
-  // The Android SDK stores only the 32-byte raw key, so prepend the fixed
-  // RFC 8410 SPKI header for id-X25519 before importing it.
-  return crypto.createPublicKey({
-    key: Buffer.concat([x25519SpkiPrefix, raw]),
-    format: 'der',
-    type: 'spki',
-  })
-}
-
 const deriveX25519AesKey = (sharedSecret, ephemeralPublicKey) => {
   const prk = crypto
     .createHmac('sha256', Buffer.alloc(32))
@@ -217,15 +205,12 @@ const xeapiMidTransform = (ciphertext) => {
 
 const xeapiEncryptS = (dynamicKey, publicKeyState, os) => {
   const peerRaw = Buffer.from(publicKeyState.publicKey, 'base64')
-  const peerKey = createX25519PublicKey(peerRaw)
-  const { publicKey, privateKey } = crypto.generateKeyPairSync('x25519')
-  const ephemeralRaw = Buffer.from(
-    publicKey.export({ format: 'der', type: 'spki' }),
-  ).subarray(-32)
-  const sharedSecret = crypto.diffieHellman({
-    privateKey,
-    publicKey: peerKey,
-  })
+  if (peerRaw.length !== 32) {
+    throw new Error('invalid XEAPI X25519 public key length')
+  }
+  const ephemeralSecret = crypto.randomBytes(32)
+  const ephemeralRaw = Buffer.from(nacl.scalarMult.base(ephemeralSecret))
+  const sharedSecret = Buffer.from(nacl.scalarMult(ephemeralSecret, peerRaw))
   const aesKey = deriveX25519AesKey(sharedSecret, ephemeralRaw)
   const iv = crypto.randomBytes(12)
   const cipher = crypto.createCipheriv('aes-128-gcm', aesKey, iv)
