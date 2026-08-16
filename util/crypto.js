@@ -154,7 +154,7 @@ const aesEcbEncrypt = (key, plaintext) => {
   const cipher = crypto.createCipheriv(
     `aes-${key.length * 8}-ecb`,
     key,
-    Buffer.alloc(0),
+    null,
   )
   return Buffer.concat([cipher.update(Buffer.from(plaintext)), cipher.final()])
 }
@@ -163,7 +163,7 @@ const aesEcbDecrypt = (key, ciphertext) => {
   const decipher = crypto.createDecipheriv(
     `aes-${key.length * 8}-ecb`,
     key,
-    Buffer.alloc(0),
+    null,
   )
   return Buffer.concat([decipher.update(ciphertext), decipher.final()])
 }
