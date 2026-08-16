@@ -1,9 +1,10 @@
 const registerAnonymous = require('../module/register_anonimous')
 const registerXeapiPublicKey = require('../module/register_xeapikey')
 const request = require('../util/request')
-const { generateDeviceId } = require('../util/index')
+const { generateDeviceId, generateRandomChineseIP } = require('../util/index')
 
 let runtimePromise = null
+let runtimeChineseIp = ''
 
 const getMusicA = (cookies) => {
   for (const cookie of cookies || []) {
@@ -17,6 +18,9 @@ const getMusicA = (cookies) => {
 }
 
 const initializeMusicRuntime = async () => {
+  runtimeChineseIp = generateRandomChineseIP()
+  global.cnIp = runtimeChineseIp
+
   const deviceId = generateDeviceId()
   global.deviceId = deviceId
 
@@ -50,7 +54,13 @@ const ensureMusicRuntime = () => {
   return runtimePromise
 }
 
+const requestWithRuntimeContext = (uri, data, options = {}) =>
+  request(uri, data, {
+    ...options,
+    ip: options.ip || runtimeChineseIp,
+  })
+
 module.exports = {
   ensureMusicRuntime,
-  request,
+  request: requestWithRuntimeContext,
 }
